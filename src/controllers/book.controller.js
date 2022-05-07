@@ -2,6 +2,7 @@ const bookModel = require("../model/book");
 const JWTService = require("../CommonLib/JWTtoken");
 const tokenModel = require("../model/token");
 const userModel = require("../model/user");
+const mongoose = require("mongoose");
 
 async function createBook(req, res, next) {
   try {
@@ -12,17 +13,25 @@ async function createBook(req, res, next) {
     if (status) {
       const userId = await tokenModel.findOne({ token });
       const userRole = await userModel.findOne({ userId: userId.userId });
-      console.log(userId);
-      if (userRole === "writer") {
-        const payload = {
-          ...req.body,
-          authorId: mongoose.Types.ObjectId(userId),
-        };
-        payload.publicationId = mongoose.Types.ObjectId(payload.publicationId);
-        // payload.publicationId = mongoose.Types.ObjectId(payload.publicationId);
-        payload.commentId = mongoose.Types.ObjectId(payload.commentId);
 
-        const bookData = await bookModel.create(payload);
+      if (userRole.roleName === "writer") {
+        req.body.authorId = userId.userId;
+        req.body.publicationId = mongoose.Types.ObjectId(
+          req.body.publicationId
+        );
+        req.body.publicationId = mongoose.Types.ObjectId(
+          req.body.publicationId
+        );
+        // console.log(req.body);
+
+        // payload.publicationId = mongoose.Types.ObjectId(payload.publicationId);
+        // payload.commentId = mongoose.Types.ObjectId(payload.commentId);
+        const bookData = await bookModel
+          .create(req.body)
+          .populate("publication")
+          .populate("user")
+          .populate("comment");
+
         return res.status(200).json({
           status: "success",
           bookData,

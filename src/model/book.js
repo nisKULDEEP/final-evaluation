@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const book = new mongoose.Schema({
   likes: { type: Number, default: 0 },
-  coverImage: { type: String },
+  coverImage: { type: Buffer },
   content: { type: String, required: true },
   timestap: { type: String, default: Date.now().toString() },
   authorId: { type: mongoose.Types.ObjectId, ref: "user" },
